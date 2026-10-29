@@ -251,13 +251,14 @@ const caseStudies: CaseStudy[] = [
 ];
 
 const categoryTabs = [
-  { label: "All Work", value: "All", icon: Layers },
-  { label: "Web Development", value: "Web Development", icon: Code2 },
-  { label: "Web Applications", value: "Web Applications", icon: Globe },
-  { label: "UI/UX Design", value: "UI/UX Design", icon: Palette },
-  { label: "AI Automation", value: "AI Automation", icon: Bot },
-  { label: "E-commerce", value: "E-commerce", icon: ShoppingBag },
-  { label: "Mobile Apps", value: "Mobile Apps", icon: Smartphone },
+  { label: "All Projects", value: "All" },
+  { label: "Web Development", value: "Web Development" },
+  { label: "Web Applications", value: "Web Applications" },
+  { label: "UI/UX Design", value: "UI/UX Design" },
+  { label: "AI Automation", value: "AI Automation" },
+  { label: "E-commerce", value: "E-commerce" },
+  { label: "Mobile Apps", value: "Mobile Apps" },
+  { label: "Branding", value: "Branding" },
 ];
 
 function WorkPage() {
