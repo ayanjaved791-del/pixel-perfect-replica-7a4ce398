@@ -195,11 +195,10 @@ export function MobileBottomBar() {
     }
 
     if (target === "work") {
-      const el = document.getElementById("work");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
+      if (path === "/work") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } else {
-        window.location.href = "/#work";
+        window.location.href = "/work";
       }
       return;
     }
