@@ -13,8 +13,6 @@ import {
   Users2,
   Clock,
 } from "lucide-react";
-import founderAsset from "@/assets/founder.png.asset.json";
-import team from "@/assets/team.jpg.asset.json";
 import { Preloader } from "@/components/site/preloader";
 import { Header } from "@/components/site/header";
 import { Footer } from "@/components/site/footer";
@@ -194,7 +192,7 @@ function About() {
           <Reveal variant="scale">
             <div className="relative overflow-hidden rounded-[2rem] border border-border">
               <LazyImage
-                src={team.url}
+                src="/assets/team.jpg"
                 fallbackSrc="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80"
                 alt="The six2eight team"
                 width={1600}
