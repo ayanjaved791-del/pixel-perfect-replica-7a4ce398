@@ -1,0 +1,19 @@
+{
+  "source": "github",
+  "source_url": "https://github.com/ayanjaved791-del/pixel-perfect-replica.git",
+  "capabilities": [
+    {"capability": "code", "source": "github checkout", "outcome": "migrated", "status": "verified", "next_action": null},
+    {"capability": "schema/database", "source": "none detected", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "records", "source": "no record export", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "auth identities", "source": "none detected (public site)", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "authorization", "source": "none detected", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "uploaded file bytes", "source": "public/ media tree", "outcome": "migrated", "status": "verified", "next_action": null},
+    {"capability": "external providers", "source": "unsplash/smushcdn/cms.six2eight.com images, Calendly booking links", "outcome": "preserved", "status": "verified", "next_action": null},
+    {"capability": "public endpoints", "source": "none detected", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "webhooks", "source": "none detected", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "schedules", "source": "none detected", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "secrets", "source": "none detected (static site, no env vars)", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "cutover", "source": "static frontend", "outcome": "not-applicable", "status": "verified", "next_action": null},
+    {"capability": "verification", "source": "4 routes rendered in browser, tests + typecheck pass", "outcome": "verified", "status": "verified", "next_action": null}
+  ]
+}
