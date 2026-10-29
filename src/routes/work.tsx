@@ -251,13 +251,14 @@ const caseStudies: CaseStudy[] = [
 ];
 
 const categoryTabs = [
-  { label: "All Work", value: "All", icon: Layers },
-  { label: "Web Development", value: "Web Development", icon: Code2 },
-  { label: "Web Applications", value: "Web Applications", icon: Globe },
-  { label: "UI/UX Design", value: "UI/UX Design", icon: Palette },
-  { label: "AI Automation", value: "AI Automation", icon: Bot },
-  { label: "E-commerce", value: "E-commerce", icon: ShoppingBag },
-  { label: "Mobile Apps", value: "Mobile Apps", icon: Smartphone },
+  { label: "All Projects", value: "All" },
+  { label: "Web Development", value: "Web Development" },
+  { label: "Web Applications", value: "Web Applications" },
+  { label: "UI/UX Design", value: "UI/UX Design" },
+  { label: "AI Automation", value: "AI Automation" },
+  { label: "E-commerce", value: "E-commerce" },
+  { label: "Mobile Apps", value: "Mobile Apps" },
+  { label: "Branding", value: "Branding" },
 ];
 
 function WorkPage() {
@@ -329,114 +330,120 @@ function WorkPage() {
           </div>
         </section>
 
-        {/* Category Filters */}
-        <section className="sticky top-20 sm:top-24 z-30 mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="overflow-x-auto py-2 no-scrollbar">
-            <div className="flex items-center justify-start sm:justify-center gap-2 min-w-max rounded-full border border-border/80 bg-background/90 p-1.5 backdrop-blur-xl shadow-lg">
-              {categoryTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = selectedCategory === tab.value;
+        {/* Category Sidebar + Projects Grid */}
+        <section className="mx-auto mt-12 max-w-7xl px-5 lg:px-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr] lg:items-start lg:gap-8">
+            {/* Sticky Filter Sidebar */}
+            <aside className="lg:sticky lg:top-28 lg:self-start">
+              <div className="rounded-3xl border border-border/70 bg-card/70 p-4 shadow-lg backdrop-blur-xl">
+                <div className="flex flex-wrap gap-2">
+                  {categoryTabs.map((tab) => {
+                    const isActive = selectedCategory === tab.value;
+                    return (
+                      <button
+                        key={tab.value}
+                        type="button"
+                        onClick={() => setSelectedCategory(tab.value)}
+                        className={cn(
+                          "rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer",
+                          isActive
+                            ? "bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.3)]"
+                            : "bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white",
+                        )}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <Magnetic className="mt-4 block">
+                <a
+                  href={CALENDLY}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex w-full items-center justify-center rounded-full bg-[#9AFD0D] px-6 py-4 text-sm sm:text-base font-bold text-black transition-all hover:brightness-110 hover:shadow-[0_0_28px_rgba(154,253,13,0.45)]"
+                >
+                  Book a Free Consultation
+                </a>
+              </Magnetic>
+            </aside>
+
+            {/* Projects Grid */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-7">
+              {filteredProjects.map((project, idx) => {
+                const wide = idx % 4 === 2;
+                const aspect = wide
+                  ? "aspect-[16/9]"
+                  : idx % 3 === 0
+                    ? "aspect-[4/5]"
+                    : idx % 3 === 1
+                      ? "aspect-[3/4]"
+                      : "aspect-[16/10]";
                 return (
-                  <button
-                    key={tab.value}
-                    type="button"
-                    onClick={() => setSelectedCategory(tab.value)}
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
-                      isActive
-                        ? "bg-[#9AFD0D] text-black shadow-[0_0_18px_rgba(154,253,13,0.4)] scale-102"
-                        : "text-zinc-400 hover:text-white hover:bg-white/5",
-                    )}
-                  >
-                    <Icon className="size-3.5" />
-                    <span>{tab.label}</span>
-                  </button>
+                  <Reveal key={project.id} delay={(idx % 4) * 40} variant="up" className={cn(wide && "sm:col-span-2")}>
+                    <article
+                      onClick={() => setActiveCaseStudy(project)}
+                      className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-border/70 bg-card p-3 sm:p-4 transition-all duration-300 hover:border-primary/50 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)] hover:-translate-y-1 cursor-pointer"
+                    >
+                      {/* Image Container */}
+                      <div
+                        className={cn(
+                          "relative w-full overflow-hidden rounded-[20px] bg-neutral-900",
+                          aspect,
+                        )}
+                      >
+                        <img
+                          src={project.image}
+                          alt={project.name}
+                          className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-106"
+                          loading="lazy"
+                        />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+
+                        {/* Tool badges */}
+                        <div className="absolute bottom-3 left-3 z-10 flex gap-1.5">
+                          {project.tools.slice(0, 3).map((t) => (
+                            <span
+                              key={t}
+                              className="flex size-8 items-center justify-center rounded-lg border border-white/10 bg-black/70 text-[10px] font-bold uppercase text-white backdrop-blur-md"
+                            >
+                              {t.slice(0, 2)}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Wide card: title & description overlay */}
+                        {wide && (
+                          <div className="absolute bottom-3 left-3 right-3 z-10 sm:bottom-5 sm:left-16 sm:right-5">
+                            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                              {project.name}
+                            </h3>
+                            <p className="mt-1 line-clamp-2 max-w-xl text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                              {project.description}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Text Content (regular cards) */}
+                      {!wide && (
+                        <div className="flex flex-1 flex-col p-2 sm:p-3">
+                          <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white transition-colors group-hover:text-[#9AFD0D]">
+                            {project.name}
+                          </h3>
+                          <p className="mt-1.5 line-clamp-2 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                            {project.description}
+                          </p>
+                        </div>
+                      )}
+                    </article>
+                  </Reveal>
                 );
               })}
             </div>
-          </div>
-        </section>
-
-        {/* Projects Grid */}
-        <section className="mx-auto mt-12 max-w-7xl px-5 lg:px-8">
-          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
-            {filteredProjects.map((project, idx) => (
-              <Reveal key={project.id} delay={idx * 40} variant="up">
-                <article
-                  onClick={() => setActiveCaseStudy(project)}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-[28px] border border-border/70 bg-card p-4 sm:p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)] hover:-translate-y-1 cursor-pointer"
-                >
-                  {/* Image Container with Zoom */}
-                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[20px] bg-neutral-900">
-                    <img
-                      src={project.image}
-                      alt={project.name}
-                      className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-106"
-                      loading="lazy"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-
-                    {/* Top Badges */}
-                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.categories.map((cat) => (
-                          <span
-                            key={cat}
-                            className="rounded-full bg-black/70 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md border border-white/10"
-                          >
-                            {cat}
-                          </span>
-                        ))}
-                      </div>
-
-                      <span className="flex size-9 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-md border border-white/10 group-hover:bg-[#9AFD0D] group-hover:text-black group-hover:border-[#9AFD0D] transition-colors">
-                        <ArrowUpRight className="size-4 transition-transform group-hover:rotate-45" />
-                      </span>
-                    </div>
-
-                    {/* Metric pill on bottom right */}
-                    <div className="absolute bottom-4 right-4 z-10 rounded-xl bg-black/80 px-3.5 py-1.5 backdrop-blur-md border border-white/15 text-right">
-                      <p className="text-base font-bold text-[#9AFD0D] leading-none">
-                        {project.metric}
-                      </p>
-                      <p className="text-[10px] text-zinc-300 font-medium mt-0.5">
-                        {project.metricLabel}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Text Content */}
-                  <div className="mt-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-[#9AFD0D] transition-colors">
-                          {project.name}
-                        </h3>
-                        <span className="text-xs font-mono text-muted-foreground">
-                          {project.year}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm text-zinc-400 line-clamp-2 leading-relaxed">
-                        {project.tagline}
-                      </p>
-                    </div>
-
-                    {/* Tech Tags */}
-                    <div className="mt-5 flex flex-wrap gap-1.5 pt-4 border-t border-border/50">
-                      {project.tools.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-md border border-border/60 bg-surface/50 px-2.5 py-1 text-[11px] font-medium text-zinc-300"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
           </div>
         </section>
 
