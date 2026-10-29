@@ -170,9 +170,9 @@ export function MobileBottomBar() {
         document.body.style.overflow = "";
         window.removeEventListener("keydown", handleKeyDown);
       };
-    } else {
-      document.body.style.overflow = "";
     }
+    document.body.style.overflow = "";
+    return undefined;
   }, [servicesOpen]);
 
   const handleNav = (target: "home" | "services" | "work" | "about", href: string) => {

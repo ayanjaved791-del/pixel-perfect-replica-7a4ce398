@@ -22,9 +22,9 @@ export function Reveal({
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el) return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
+      return undefined;
     }
 
     const rect = el.getBoundingClientRect();

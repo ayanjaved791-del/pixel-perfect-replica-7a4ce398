@@ -299,13 +299,16 @@ export function Services() {
     isHovered.current = true;
     isDown.current = true;
     isDraggingRef.current = false;
-    startX.current = e.touches[0].pageX;
+    const touch = e.touches[0];
+    if (touch) startX.current = touch.pageX;
     dragStartOffset.current = offsetRef.current;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDown.current) return;
-    const diff = e.touches[0].pageX - startX.current;
+    const touch = e.touches[0];
+    if (!touch) return;
+    const diff = touch.pageX - startX.current;
     if (Math.abs(diff) > 5) {
       isDraggingRef.current = true;
     }
