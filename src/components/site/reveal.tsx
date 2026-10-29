@@ -45,6 +45,7 @@ export function Reveal({
       io.observe(el);
       return () => io.disconnect();
     }
+    return undefined;
   }, []);
 
   return (
