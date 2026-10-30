@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { siteData } from "@/data/webdev/siteData";
 import { Star, CheckCircle, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 import { saveInquiry } from "@/lib/inbox";
 
-export const ContactForm: React.FC = () => {
+interface ContactFormProps {
+  defaultService?: string;
+}
+
+export const ContactForm: React.FC<ContactFormProps> = ({ defaultService }) => {
   const { contact } = siteData;
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
   // Form states matching user's design
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [selectedServices, setSelectedServices] = useState<string[]>(["Web Development"]);
+  const [selectedServices, setSelectedServices] = useState<string[]>([
+    defaultService || "Web Development",
+  ]);
   const [budget, setBudget] = useState("$1k to 10k");
   const [message, setMessage] = useState("");
   const [helpDropdownOpen, setHelpDropdownOpen] = useState(false);
@@ -69,17 +76,24 @@ export const ContactForm: React.FC = () => {
     e.preventDefault();
     if (!fullName || !email) return;
 
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+    const resolvedSource =
+      currentPath || (defaultService ? `/services/${defaultService}` : "/services/web-development");
+
     try {
       saveInquiry({
         fullName: fullName.trim(),
         email: email.trim(),
-        services: selectedServices,
+        services:
+          selectedServices.length > 0 ? selectedServices : [defaultService || "Web Development"],
         budget,
         message: message.trim() || undefined,
-        source: "/services/web-development",
+        source: resolvedSource,
       });
+      toast.success("Inquiry received! Connected directly to our admin team.");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to submit inquiry. Please try again.");
     }
 
     setIsSubmitted(true);

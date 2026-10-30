@@ -2,8 +2,12 @@ import React, { useState } from "react";
 import { siteData } from "@/data/webdev/siteData";
 import { ChevronDown } from "lucide-react";
 
-export const Faqs: React.FC = () => {
-  const { faqs } = siteData;
+interface FaqsProps {
+  data?: typeof siteData.faqs;
+}
+
+export const Faqs: React.FC<FaqsProps> = ({ data }) => {
+  const faqs = data || siteData.faqs;
   const [openIndex, setOpenIndex] = useState<number | null>(0); // First item open by default
 
   const toggle = (idx: number) => {

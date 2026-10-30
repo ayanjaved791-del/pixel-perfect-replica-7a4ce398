@@ -72,11 +72,15 @@ const StrategyCard: React.FC<StrategyCardProps> = ({ item, index, compact = fals
   );
 };
 
-export const Strategy: React.FC = () => {
-  const { strategy } = siteData;
+interface StrategyProps {
+  data?: typeof siteData.strategy;
+}
 
-  const col1Items = [strategy.items[0], strategy.items[2], strategy.items[4]];
-  const col2Items = [strategy.items[1], strategy.items[3], strategy.items[5]];
+export const Strategy: React.FC<StrategyProps> = ({ data }) => {
+  const strategy = data || siteData.strategy;
+
+  const col1Items = [strategy.items[0], strategy.items[2], strategy.items[4]].filter(Boolean);
+  const col2Items = [strategy.items[1], strategy.items[3], strategy.items[5]].filter(Boolean);
 
   return (
     <section

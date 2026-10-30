@@ -2,8 +2,12 @@ import React from "react";
 import { siteData } from "@/data/webdev/siteData";
 import { ArrowUpRight } from "lucide-react";
 
-export const Projects: React.FC = () => {
-  const { projects } = siteData;
+interface ProjectsProps {
+  data?: typeof siteData.projects;
+}
+
+export const Projects: React.FC<ProjectsProps> = ({ data }) => {
+  const projects = data || siteData.projects;
 
   return (
     <section

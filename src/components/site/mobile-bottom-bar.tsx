@@ -16,25 +16,25 @@ const mobileDesignServices: MobileServiceItem[] = [
     title: "UI & UX Design Services",
     subtitle: "Web & Mobile app design",
     icon: "/assets/dropdown/ui-ux-design.svg",
-    href: "/#services",
+    href: "/services/ui-ux-design",
   },
   {
     title: "Web Design Services",
     subtitle: "Modern websites that convert",
     icon: "/assets/dropdown/web-design.svg",
-    href: "/#services",
+    href: "/services/web-design",
   },
   {
     title: "Mobile App Design Services",
     subtitle: "Seamless iOS & Android design",
     icon: "/assets/dropdown/mobile-app.svg",
-    href: "/#services",
+    href: "/services/mobile-app-design",
   },
   {
     title: "Branding & Identity Services",
     subtitle: "Identity that stands out",
     icon: "/assets/dropdown/branding.svg",
-    href: "/#services",
+    href: "/services/branding-identity",
   },
 ];
 
@@ -49,19 +49,19 @@ const mobileDevServices: MobileServiceItem[] = [
     title: "WordPress Development Services",
     subtitle: "Easy to manage & scale",
     icon: "/assets/dropdown/wordpress-1.svg",
-    href: "/#services",
+    href: "/services/wordpress-development",
   },
   {
     title: "Shopify Development Services",
     subtitle: "Sell more with Shopify",
     icon: "/assets/dropdown/shopify-1.svg",
-    href: "/#services",
+    href: "/services/shopify-development",
   },
   {
     title: "Webflow Development Services",
     subtitle: "Custom sites, no compromises",
     icon: "/assets/dropdown/webflow-1.svg",
-    href: "/#services",
+    href: "/services/webflow-development",
   },
 ];
 
@@ -70,25 +70,25 @@ const mobileAdServices: MobileServiceItem[] = [
     title: "Digital Marketing Services",
     subtitle: "Data-driven campaigns that scale",
     icon: "/assets/dropdown/digital-marketing.svg",
-    href: "/#services",
+    href: "/services/digital-marketing",
   },
   {
     title: "Paid Search & Social Ads",
     subtitle: "High-ROI Google & Meta ads",
     icon: "/assets/dropdown/paid-ads.svg",
-    href: "/#services",
+    href: "/services/paid-ads",
   },
   {
     title: "SEO & Growth Marketing",
     subtitle: "Organic search ranking & authority",
     icon: "/assets/dropdown/seo-marketing.svg",
-    href: "/#services",
+    href: "/services/seo-marketing",
   },
   {
     title: "Content & Influencer Marketing",
     subtitle: "Attract, engage & retain buyers",
     icon: "/assets/dropdown/content-marketing.svg",
-    href: "/#services",
+    href: "/services/content-marketing",
   },
 ];
 
@@ -111,6 +111,10 @@ export function MobileBottomBar() {
       }
       if (path === "/about") {
         setActiveTab("about");
+        return;
+      }
+      if (path === "/work") {
+        setActiveTab("work");
         return;
       }
       if (path.startsWith("/services")) {

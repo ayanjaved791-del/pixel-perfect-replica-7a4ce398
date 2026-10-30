@@ -78,16 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "six2eight — Digital Growth Agency" },
+      { title: "six2eight Digital Growth Agency & Admin Portal" },
       {
         name: "description",
-        content: "Connected strategy, design, technology, and marketing for business growth.",
+        content:
+          "High-velocity web development, design, and growth agency website with real-time private client inquiry admin dashboard.",
       },
       { name: "author", content: "six2eight" },
-      { property: "og:title", content: "six2eight — Digital Growth Agency" },
+      { property: "og:title", content: "six2eight Digital Growth Agency & Admin Portal" },
       {
         property: "og:description",
-        content: "Connected strategy, design, technology, and marketing for business growth.",
+        content:
+          "High-velocity web development, design, and growth agency website with real-time private client inquiry admin dashboard.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

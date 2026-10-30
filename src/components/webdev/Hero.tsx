@@ -1,8 +1,12 @@
 import React from "react";
 import { siteData } from "@/data/webdev/siteData";
 
-export const Hero: React.FC = () => {
-  const { hero } = siteData;
+interface HeroProps {
+  data?: typeof siteData.hero;
+}
+
+export const Hero: React.FC<HeroProps> = ({ data }) => {
+  const hero = data || siteData.hero;
 
   return (
     <section
@@ -18,26 +22,21 @@ export const Hero: React.FC = () => {
                 className="text-left text-[#ffffff] text-[42px] sm:text-[54px] md:text-[68px] lg:text-[clamp(48px,4.25vw,88px)] leading-[1.12] lg:leading-[1.18] font-semibold tracking-tight"
                 style={{ fontFamily: "'Manrope', sans-serif" }}
               >
-                Top-Tier Web Development Services!
+                {hero.title}
               </h1>
             </div>
 
-            <div className="text-left text-[16px] md:text-[20px] leading-[26px] md:leading-[32px] w-full text-[#B5B5B5]">
-              <p>
-                You shouldn’t have to choose between affordability and
-                <br className="hidden sm:inline" /> performance. We ensure you get the best web
-                development
-                <br className="hidden sm:inline" /> solution within your budget, without
-                compromising quality.
-              </p>
-            </div>
+            <div
+              className="text-left text-[16px] md:text-[20px] leading-[26px] md:leading-[32px] w-full text-[#B5B5B5] [&_p]:mb-2"
+              dangerouslySetInnerHTML={{ __html: hero.description }}
+            />
 
             <div className="button-blocks mt-4 mb-2">
               <a
                 href={hero.buttonUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Get 30-min Dev Consultation!"
+                aria-label={hero.buttonLabel}
                 className="secondary-buttons button-slide cursor-pointer"
               >
                 <div className="button-text-wrapper">
@@ -55,7 +54,7 @@ export const Hero: React.FC = () => {
             <div className="relative w-full rounded-[20px] md:rounded-[24px] overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/5 shadow-2xl group">
               <img
                 src={hero.image}
-                alt="Web development illustration"
+                alt={hero.title}
                 className="w-full h-auto object-cover relative z-10 transition-transform duration-500 ease-out group-hover:scale-[1.02]"
                 loading="eager"
               />

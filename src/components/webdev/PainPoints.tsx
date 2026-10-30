@@ -2,8 +2,24 @@ import React from "react";
 import { siteData } from "@/data/webdev/siteData";
 import { painPointSvgs } from "@/data/webdev/painPointSvgs";
 
-export const PainPoints: React.FC = () => {
-  const { pain_points } = siteData;
+export interface PainPointItem {
+  heading: string;
+  description: string;
+  svg?: string;
+}
+
+export interface PainPointsData {
+  block_title: string;
+  main_title: string;
+  items: PainPointItem[];
+}
+
+interface PainPointsProps {
+  data?: PainPointsData;
+}
+
+export const PainPoints: React.FC<PainPointsProps> = ({ data }) => {
+  const pain_points = data || siteData.pain_points;
 
   return (
     <section
@@ -29,7 +45,7 @@ export const PainPoints: React.FC = () => {
 
         {/* 4 Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[20px] md:gap-[24px]">
-          {pain_points.items.map((item, idx) => (
+          {pain_points.items.map((item, idx: number) => (
             <article
               key={idx}
               className="h-full min-h-[304px] rounded-[16px] bg-white/10 p-px transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-xl hover:shadow-black/50 group"
@@ -38,10 +54,10 @@ export const PainPoints: React.FC = () => {
                 <div className="flex w-full flex-col items-start gap-[24px]">
                   {/* SVG Icon */}
                   <div className="relative flex size-[48px] shrink-0 items-center justify-center overflow-hidden rounded-[8px] bg-white/10 p-2 text-white group-hover:bg-[#9AFD0D]/20 transition-colors duration-300">
-                    {painPointSvgs[idx] ? (
+                    {item.svg || painPointSvgs[idx] ? (
                       <div
                         className="w-full h-full flex items-center justify-center [&_svg]:w-full [&_svg]:h-full"
-                        dangerouslySetInnerHTML={{ __html: painPointSvgs[idx] }}
+                        dangerouslySetInnerHTML={{ __html: item.svg || painPointSvgs[idx] }}
                       />
                     ) : (
                       <div className="w-6 h-6 bg-[#9AFD0D] rounded-full" />

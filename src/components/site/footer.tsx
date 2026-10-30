@@ -1,16 +1,25 @@
 const designServices = [
-  "Branding & Strategy",
-  "UI/UX Experiences",
-  "SEO & Organic Growth",
+  "UI & UX Design",
+  "Web Design",
+  "Mobile App Design",
+  "Branding & Identity",
+  "SEO & Growth Marketing",
   "Paid Advertising",
-  "Lead Generation",
 ];
-const devServices = ["Web Development", "E-commerce", "AI Automation & CRM", "Web Applications"];
+const devServices = [
+  "Web Development",
+  "WordPress Development",
+  "Shopify Development",
+  "Webflow Development",
+  "Digital Marketing",
+  "Content Marketing",
+];
 const company = [
   { name: "About Us", href: "/about" },
   { name: "Contact Us", href: "/contact" },
   { name: "Our Work", href: "/work" },
   { name: "Web Development", href: "/services/web-development" },
+  { name: "UI & UX Design", href: "/services/ui-ux-design" },
 ];
 const socials = ["Dribbble", "Instagram", "Behance", "LinkedIn", "Facebook"];
 

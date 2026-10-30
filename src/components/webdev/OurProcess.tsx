@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { siteData } from "@/data/webdev/siteData";
 
-export const OurProcess: React.FC = () => {
-  const { process } = siteData;
+interface OurProcessProps {
+  data?: typeof siteData.process;
+}
+
+export const OurProcess: React.FC<OurProcessProps> = ({ data }) => {
+  const process = data || siteData.process;
   const sectionRef = useRef<HTMLElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
 

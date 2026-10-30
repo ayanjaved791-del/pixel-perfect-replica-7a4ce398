@@ -1,12 +1,30 @@
-const designServices = [
-  "Branding & Strategy",
-  "UI/UX Experiences",
-  "SEO & Organic Growth",
-  "Paid Advertising",
-  "Lead Generation",
+type FooterItem = string | { name: string; href: string };
+
+const designServices: FooterItem[] = [
+  { name: "UI & UX Design", href: "/services/ui-ux-design" },
+  { name: "Web Design", href: "/services/web-design" },
+  { name: "Mobile App Design", href: "/services/mobile-app-design" },
+  { name: "Branding & Identity", href: "/services/branding-identity" },
+  { name: "SEO & Growth Marketing", href: "/services/seo-marketing" },
+  { name: "Paid Advertising", href: "/services/paid-ads" },
 ];
-const devServices = ["Web Development", "E-commerce", "AI Automation & CRM", "Web Applications"];
-const company = ["About Us", "FAQs", "Blogs", "Team", "Career"];
+
+const devServices: FooterItem[] = [
+  { name: "Web Development", href: "/services/web-development" },
+  { name: "WordPress Development", href: "/services/wordpress-development" },
+  { name: "Shopify Development", href: "/services/shopify-development" },
+  { name: "Webflow Development", href: "/services/webflow-development" },
+  { name: "Digital Marketing", href: "/services/digital-marketing" },
+  { name: "Content & Influencer", href: "/services/content-marketing" },
+];
+
+const company: FooterItem[] = [
+  { name: "About Us", href: "/about" },
+  { name: "Contact Us", href: "/contact" },
+  { name: "Our Work", href: "/work" },
+  { name: "Admin Portal", href: "/admin" },
+];
+
 const socials = ["Dribbble", "Instagram", "Behance", "LinkedIn", "Facebook"];
 
 export function Footer() {
@@ -15,9 +33,9 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <span className="flex items-baseline text-2xl font-semibold tracking-tight">
+            <a href="/" className="flex items-baseline text-2xl font-semibold tracking-tight">
               six<span className="text-primary">2</span>eight
-            </span>
+            </a>
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">
               A full-service digital growth agency connecting strategy, design, technology, and
               marketing to move businesses forward.
@@ -34,8 +52,8 @@ export function Footer() {
             </div>
           </div>
 
-          <FooterCol title="Strategy & Growth" items={designServices} />
-          <FooterCol title="Technology & Systems" items={devServices} />
+          <FooterCol title="Design & Growth" items={designServices} />
+          <FooterCol title="Development & Systems" items={devServices} />
           <FooterCol title="Company" items={company} />
         </div>
 
@@ -62,18 +80,26 @@ export function Footer() {
   );
 }
 
-function FooterCol({ title, items }: { title: string; items: string[] }) {
+function FooterCol({ title, items }: { title: string; items: FooterItem[] }) {
   return (
     <div>
       <h3 className="text-sm font-medium text-foreground">{title}</h3>
       <ul className="mt-4 space-y-2.5">
-        {items.map((i) => (
-          <li key={i}>
-            <span className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
-              {i}
-            </span>
-          </li>
-        ))}
+        {items.map((i) => {
+          const name = typeof i === "string" ? i : i.name;
+          const href = typeof i === "string" ? "#" : i.href;
+
+          return (
+            <li key={name}>
+              <a
+                href={href}
+                className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary"
+              >
+                {name}
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

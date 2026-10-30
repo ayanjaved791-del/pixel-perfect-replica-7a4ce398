@@ -3,8 +3,12 @@ import { siteData } from "@/data/webdev/siteData";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useMotionValue, animate } from "motion/react";
 
-export const SubServices: React.FC = () => {
-  const { subservices } = siteData;
+interface SubServicesProps {
+  data?: typeof siteData.subservices;
+}
+
+export const SubServices: React.FC<SubServicesProps> = ({ data }) => {
+  const subservices = data || siteData.subservices;
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [maxIndex, setMaxIndex] = useState(subservices.cards.length - 1);

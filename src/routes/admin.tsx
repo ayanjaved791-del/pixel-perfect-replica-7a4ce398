@@ -582,7 +582,7 @@ function AdminPage() {
                 <p className="text-xs text-neutral-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
                   {searchQuery || statusFilter !== "all"
                     ? "Try adjusting your search query or status filter."
-                    : "All dummy data has been removed. Client submissions from /contact, homepage, or web development will arrive here automatically in real-time."}
+                    : "All dummy data has been removed. Client submissions from /contact, homepage, or any of the 12 service pages will arrive here automatically in real-time."}
                 </p>
                 {inquiries.length === 0 && (
                   <div className="mt-5">

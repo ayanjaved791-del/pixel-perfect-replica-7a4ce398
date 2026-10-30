@@ -3,46 +3,128 @@ import { ServicesDropdown } from "./services-dropdown";
 import { MobileBottomBar } from "./mobile-bottom-bar";
 
 export function Header() {
-  const [scrolled, setScrolled] = useState(false);
+  const [currentPath, setCurrentPath] = useState("/");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const updatePath = () => {
+      if (typeof window !== "undefined") {
+        setCurrentPath(window.location.pathname);
+      }
+    };
+    updatePath();
+    window.addEventListener("popstate", updatePath);
+    return () => window.removeEventListener("popstate", updatePath);
   }, []);
+
+  const handleNav = (
+    target: "home" | "work" | "about" | "contact",
+    href: string,
+    e: React.MouseEvent,
+  ) => {
+    if (typeof window === "undefined") return;
+    const path = window.location.pathname;
+
+    if (target === "home") {
+      if (path === "/") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    if (target === "work") {
+      if (path === "/work") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    if (target === "about") {
+      if (path === "/about") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    if (target === "contact") {
+      if (path === "/contact") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+  };
+
+  const isHome = currentPath === "/" || currentPath === "";
+  const isWork = currentPath === "/work";
+  const isAbout = currentPath === "/about";
+  const isContact = currentPath === "/contact";
 
   return (
     <>
       <header className="hidden lg:block fixed inset-x-0 top-4 sm:top-6 z-50 px-4 pointer-events-none">
-        <div className="mx-auto flex h-14 sm:h-16 max-w-2xl items-center justify-between rounded-full bg-[#121212]/95 border border-white/10 px-4 sm:px-5 py-2 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] pointer-events-auto transition-all duration-300">
-          {/* Exact Logo from Screenshot */}
-          <a href="/#top" className="flex items-center shrink-0" aria-label="six2eight home">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-3xl items-center justify-between rounded-full bg-[#121212]/95 border border-white/10 px-4 sm:px-6 py-2 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.6)] pointer-events-auto transition-all duration-300">
+          {/* Logo - Navigates Home */}
+          <a
+            href="/"
+            onClick={(e) => handleNav("home", "/", e)}
+            className="flex items-center shrink-0 group cursor-pointer"
+            aria-label="six2eight home"
+          >
             <Logo />
           </a>
 
-          {/* Desktop Navigation Links matching Screenshot */}
-          <nav className="flex items-center gap-6">
+          {/* Desktop Navigation Links matching Bottom Bar strictly */}
+          <nav className="flex items-center gap-6 sm:gap-7">
+            {/* 1. Home */}
+            <a
+              href="/"
+              onClick={(e) => handleNav("home", "/", e)}
+              className={`text-[15px] font-medium transition-colors cursor-pointer ${
+                isHome ? "text-[#9AFD0D] font-semibold" : "text-[#E0E0E0] hover:text-white"
+              }`}
+            >
+              Home
+            </a>
+
+            {/* 2. Services Dropdown */}
             <ServicesDropdown />
+
+            {/* 3. Work */}
             <a
               href="/work"
-              className="text-[15px] font-medium text-[#E0E0E0] hover:text-white transition-colors"
+              onClick={(e) => handleNav("work", "/work", e)}
+              className={`text-[15px] font-medium transition-colors cursor-pointer ${
+                isWork ? "text-[#9AFD0D] font-semibold" : "text-[#E0E0E0] hover:text-white"
+              }`}
             >
               Work
             </a>
+
+            {/* 4. About Us */}
             <a
               href="/about"
-              className="text-[15px] font-medium text-[#E0E0E0] hover:text-white transition-colors"
+              onClick={(e) => handleNav("about", "/about", e)}
+              className={`text-[15px] font-medium transition-colors cursor-pointer ${
+                isAbout ? "text-[#9AFD0D] font-semibold" : "text-[#E0E0E0] hover:text-white"
+              }`}
             >
               About Us
             </a>
           </nav>
 
-          {/* Contact Us Solid White Pill Button matching Screenshot */}
+          {/* 5. Contact Us Button */}
           <div className="flex items-center">
             <a
               href="/contact"
-              className="rounded-full bg-white hover:bg-neutral-100 text-black font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 transition-all shadow-sm shrink-0"
+              onClick={(e) => handleNav("contact", "/contact", e)}
+              className={`rounded-full text-xs sm:text-sm px-4 sm:px-5 py-2 sm:py-2.5 transition-all shadow-sm shrink-0 cursor-pointer font-semibold ${
+                isContact
+                  ? "bg-[#9AFD0D] text-black shadow-[0_0_20px_rgba(154,253,13,0.5)] ring-2 ring-[#9AFD0D]"
+                  : "bg-white hover:bg-neutral-100 text-black"
+              }`}
             >
               Contact Us
             </a>

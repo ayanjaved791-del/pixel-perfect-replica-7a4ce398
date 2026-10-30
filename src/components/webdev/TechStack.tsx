@@ -1,8 +1,12 @@
 import React from "react";
 import { siteData } from "@/data/webdev/siteData";
 
-export const TechStack: React.FC = () => {
-  const { tech_stack } = siteData;
+interface TechStackProps {
+  data?: typeof siteData.tech_stack;
+}
+
+export const TechStack: React.FC<TechStackProps> = ({ data }) => {
+  const tech_stack = data || siteData.tech_stack;
 
   return (
     <section className="bg-[#111111] pt-[40px] sm:pt-[60px] md:pt-[120px] pb-[40px] sm:pb-[60px] md:pb-[140px] relative">
@@ -13,18 +17,14 @@ export const TechStack: React.FC = () => {
             <h2
               className="text-white text-[32px] sm:text-[44px] md:text-[54px] lg:text-[60px] font-semibold leading-[1.14] tracking-tight"
               style={{ fontFamily: "'Manrope', sans-serif" }}
-            >
-              Our Technology Stack <br className="hidden sm:inline" />
-              for Scalable Web Builds
-            </h2>
+              dangerouslySetInnerHTML={{ __html: tech_stack.title }}
+            />
           </div>
           <div className="lg:col-span-6">
-            <p className="text-[#B5B5B5] text-[16px] sm:text-[18px] md:text-[20px] leading-[26px] sm:leading-[30px] md:leading-[34px] font-normal">
-              Our development stack is built for speed, stability, and long-term growth. We use
-              modern frameworks and languages to create clean codebases that scale as products grow.
-              Every technology we use supports performance, maintainability, and reliable deployment
-              across environments.
-            </p>
+            <div
+              className="text-[#B5B5B5] text-[16px] sm:text-[18px] md:text-[20px] leading-[26px] sm:leading-[30px] md:leading-[34px] font-normal [&_p]:mb-3"
+              dangerouslySetInnerHTML={{ __html: tech_stack.description }}
+            />
           </div>
         </div>
 
