@@ -26,6 +26,7 @@ import { Reveal } from "@/components/site/reveal";
 import { Magnetic } from "@/components/site/magnetic";
 import { CALENDLY } from "@/data/site";
 import { cn } from "@/lib/utils";
+import { saveInquiry } from "@/lib/inbox";
 
 const title = "Contact Us — six2eight Digital Growth Agency";
 const description =
@@ -131,11 +132,28 @@ function ContactPage() {
     }
     setIsSubmitting(true);
 
+    try {
+      saveInquiry({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        company: company.trim() || undefined,
+        website: website.trim() || undefined,
+        services: selectedServices,
+        budget,
+        timeline,
+        message: message.trim() || undefined,
+        hearAbout: hearAbout || undefined,
+        source: "/contact",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
       toast.success("Thank you! Your project request has been logged successfully.");
-    }, 800);
+    }, 600);
   };
 
   return (

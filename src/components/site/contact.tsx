@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Star, ChevronDown, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { siteData } from "@/data/webdev/siteData";
+import { saveInquiry } from "@/lib/inbox";
 
 const budgetOptions = ["$1k to 10k", "$10k to 20k", "$20k to $50k", "$100k+"];
 
@@ -64,6 +65,21 @@ export function Contact() {
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!fullName.trim() || !email.trim()) return;
+
+    try {
+      saveInquiry({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        services: selectedServices.length > 0 ? selectedServices : ["Web Development"],
+        budget,
+        message: message.trim() || undefined,
+        source: "Homepage /#contact",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
     toast.success(
       "Thank you! Your project request has been received. Our team will get back to you shortly.",
     );

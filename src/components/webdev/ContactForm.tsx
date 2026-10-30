@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { siteData } from "@/data/webdev/siteData";
 import { Star, CheckCircle, ChevronDown } from "lucide-react";
+import { saveInquiry } from "@/lib/inbox";
 
 export const ContactForm: React.FC = () => {
   const { contact } = siteData;
@@ -67,6 +68,20 @@ export const ContactForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email) return;
+
+    try {
+      saveInquiry({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        services: selectedServices,
+        budget,
+        message: message.trim() || undefined,
+        source: "/services/web-development",
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
     setIsSubmitted(true);
   };
 
