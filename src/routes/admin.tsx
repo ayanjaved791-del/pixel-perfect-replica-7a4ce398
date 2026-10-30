@@ -36,6 +36,8 @@ import {
   fetchServerInquiries,
   updateInquiryStatus,
   deleteInquiry,
+  authenticateAdmin,
+  logoutAdmin,
   type ClientInquiry,
 } from "@/lib/inbox";
 import { cn } from "@/lib/utils";
@@ -54,13 +56,9 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-// Required login credentials specified by user:
-const AUTH_USERNAME = "ozyrah@talha";
-const AUTH_PASSWORD = "madebyAI";
-
 function AdminPage() {
   // Requirement: "first its everytime ask for login everytime"
-  // Default is false on every page load/mount
+  // Default is strictly false on every page load/mount
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
@@ -75,6 +73,7 @@ function AdminPage() {
   const [selectedInquiry, setSelectedInquiry] = useState<ClientInquiry | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Reload inquiries from local store and server
   const refreshInquiries = useCallback(async () => {
@@ -87,7 +86,7 @@ function AdminPage() {
       return localData.find((item) => item.id === prev.id) || null;
     });
 
-    // 2. Fetch fresh live records from server in background
+    // 2. Fetch fresh live records from server in background using secure session
     try {
       const serverData = await fetchServerInquiries();
       setInquiries(serverData);
@@ -145,29 +144,38 @@ function AdminPage() {
     };
   }, [refreshInquiries]);
 
-  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoginError("");
     setIsLoggingIn(true);
 
-    setTimeout(() => {
-      setIsLoggingIn(false);
-      if (usernameInput.trim() === AUTH_USERNAME && passwordInput.trim() === AUTH_PASSWORD) {
+    try {
+      const result = await authenticateAdmin(usernameInput, passwordInput);
+      if (result.success) {
         setIsAuthenticated(true);
-        toast.success(`Welcome back, ${AUTH_USERNAME}`);
+        toast.success(`Welcome back, ${usernameInput.trim()}`);
         refreshInquiries();
       } else {
-        setLoginError("Invalid username or password. Please verify your admin credentials.");
-        toast.error("Authentication failed. Invalid username or password.");
+        const errorMsg = result.error || "Invalid username or password. Please verify credentials.";
+        setLoginError(errorMsg);
+        toast.error(errorMsg);
       }
-    }, 450);
+    } catch (err) {
+      console.error(err);
+      setLoginError("An unexpected error occurred during login. Please try again.");
+      toast.error("Authentication failed.");
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutAdmin();
     setIsAuthenticated(false);
     setUsernameInput("");
     setPasswordInput("");
     setSelectedInquiry(null);
+    setDeleteConfirmId(null);
     toast.info("Logged out of Admin Portal.");
   };
 
@@ -181,14 +189,22 @@ function AdminPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to permanently delete this client inquiry?")) {
-      const updated = deleteInquiry(id);
-      setInquiries(updated);
-      if (selectedInquiry && selectedInquiry.id === id) {
-        setSelectedInquiry(null);
-      }
-      toast.success(`Inquiry ${id} deleted`);
+    if (deleteConfirmId !== id) {
+      setDeleteConfirmId(id);
+      toast.warning("Click delete again to permanently confirm deletion.", { duration: 3500 });
+      setTimeout(() => {
+        setDeleteConfirmId((prev) => (prev === id ? null : prev));
+      }, 4000);
+      return;
     }
+
+    setDeleteConfirmId(null);
+    const updated = deleteInquiry(id);
+    setInquiries(updated);
+    if (selectedInquiry && selectedInquiry.id === id) {
+      setSelectedInquiry(null);
+    }
+    toast.success(`Inquiry ${id} deleted`);
   };
 
   const copyEmail = (email: string, id: string) => {
@@ -341,7 +357,7 @@ function AdminPage() {
                   autoComplete="username"
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="ozyrah@talha"
+                  placeholder="sixtoeight@talha"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#1A1A1F] border border-white/10 text-white placeholder:text-neutral-600 text-sm focus:border-[#9AFD0D] focus:ring-1 focus:ring-[#9AFD0D] outline-none transition-all"
                 />
               </div>
@@ -716,10 +732,20 @@ function AdminPage() {
                     <button
                       type="button"
                       onClick={() => handleDelete(selectedInquiry.id)}
-                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors cursor-pointer"
-                      title="Delete inquiry"
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold",
+                        deleteConfirmId === selectedInquiry.id
+                          ? "bg-rose-500 text-white border-rose-600 shadow-md shadow-rose-950/40"
+                          : "bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/30",
+                      )}
+                      title={
+                        deleteConfirmId === selectedInquiry.id
+                          ? "Click again to permanently delete this inquiry"
+                          : "Delete inquiry"
+                      }
                     >
-                      <Trash2 className="size-4" />
+                      <Trash2 className="size-3.5" />
+                      {deleteConfirmId === selectedInquiry.id ? "Confirm Delete?" : "Delete"}
                     </button>
                   </div>
                 </div>
