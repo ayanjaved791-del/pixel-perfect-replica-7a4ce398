@@ -382,7 +382,12 @@ function WorkPage() {
                       ? "aspect-[3/4]"
                       : "aspect-[16/10]";
                 return (
-                  <Reveal key={project.id} delay={(idx % 4) * 40} variant="up" className={cn(wide && "sm:col-span-2")}>
+                  <Reveal
+                    key={project.id}
+                    delay={(idx % 4) * 40}
+                    variant="up"
+                    className={cn(wide && "sm:col-span-2")}
+                  >
                     <article
                       onClick={() => setActiveCaseStudy(project)}
                       className="group relative flex h-full flex-col overflow-hidden rounded-[28px] border border-border/70 bg-card p-3 sm:p-4 transition-all duration-300 hover:border-primary/50 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)] hover:-translate-y-1 cursor-pointer"
