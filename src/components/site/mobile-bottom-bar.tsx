@@ -93,7 +93,9 @@ const mobileAdServices: MobileServiceItem[] = [
 ];
 
 export function MobileBottomBar() {
-  const [activeTab, setActiveTab] = useState<"home" | "services" | "work" | "about">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "services" | "work" | "about" | "contact">(
+    "home",
+  );
   const [contactOpen, setContactOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
 
@@ -103,6 +105,10 @@ export function MobileBottomBar() {
       const path = window.location.pathname;
       const hash = window.location.hash;
 
+      if (path === "/contact") {
+        setActiveTab("contact");
+        return;
+      }
       if (path === "/about") {
         setActiveTab("about");
         return;
@@ -250,11 +256,10 @@ export function MobileBottomBar() {
 
   const handleChatFab = () => {
     setServicesOpen(false);
-    const contactEl = document.getElementById("contact");
-    if (contactEl) {
-      contactEl.scrollIntoView({ behavior: "smooth" });
+    if (window.location.pathname === "/contact") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      setContactOpen(true);
+      window.location.href = "/contact";
     }
   };
 
@@ -308,7 +313,10 @@ export function MobileBottomBar() {
             {/* Pulsing Radial Lime Glow Halo */}
             <div
               aria-hidden="true"
-              className="absolute -inset-2 rounded-full bg-[#9AFD0D]/35 blur-[14px] pointer-events-none animate-pulse"
+              className={cn(
+                "absolute -inset-2 rounded-full bg-[#9AFD0D]/35 blur-[14px] pointer-events-none animate-pulse",
+                activeTab === "contact" && "bg-[#9AFD0D]/55 blur-[18px]",
+              )}
             />
             <div
               aria-hidden="true"
@@ -319,8 +327,12 @@ export function MobileBottomBar() {
             <button
               type="button"
               onClick={handleChatFab}
-              aria-label="Contact and Discovery Chat"
-              className="relative flex size-[52px] items-center justify-center rounded-full bg-[#0a0a0a] border border-[#9AFD0D]/60 shadow-[0_0_20px_rgba(154,253,13,0.45),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-transform duration-200 active:scale-95 cursor-pointer"
+              aria-label="Contact six2eight"
+              className={cn(
+                "relative flex size-[52px] items-center justify-center rounded-full bg-[#0a0a0a] border border-[#9AFD0D]/60 shadow-[0_0_20px_rgba(154,253,13,0.45),inset_0_1px_2px_rgba(255,255,255,0.2)] transition-all duration-200 active:scale-95 cursor-pointer hover:border-[#9AFD0D] hover:shadow-[0_0_26px_rgba(154,253,13,0.65)]",
+                activeTab === "contact" &&
+                  "border-[#9AFD0D] shadow-[0_0_28px_rgba(154,253,13,0.85)] ring-2 ring-[#9AFD0D]/50 scale-105",
+              )}
             >
               {/* Custom Chat Speech Bubble Icon with 2 text lines inside matching the image */}
               <svg
@@ -681,12 +693,12 @@ export function MobileBottomBar() {
             </a>
 
             <a
-              href="/#contact"
+              href="/contact"
               onClick={() => {
                 setContactOpen(false);
-                setTimeout(() => {
-                  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-                }, 200);
+                if (window.location.pathname === "/contact") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
               }}
               className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors"
             >

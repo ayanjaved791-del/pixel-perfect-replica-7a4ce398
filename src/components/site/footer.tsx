@@ -6,7 +6,12 @@ const designServices = [
   "Lead Generation",
 ];
 const devServices = ["Web Development", "E-commerce", "AI Automation & CRM", "Web Applications"];
-const company = ["About Us", "FAQs", "Blogs", "Team", "Career"];
+const company = [
+  { name: "About Us", href: "/about" },
+  { name: "Contact Us", href: "/contact" },
+  { name: "Our Work", href: "/work" },
+  { name: "Web Development", href: "/services/web-development" },
+];
 const socials = ["Dribbble", "Instagram", "Behance", "LinkedIn", "Facebook"];
 
 export function Footer() {
@@ -62,18 +67,39 @@ export function Footer() {
   );
 }
 
-function FooterCol({ title, items }: { title: string; items: string[] }) {
+function FooterCol({
+  title,
+  items,
+}: {
+  title: string;
+  items: (string | { name: string; href: string })[];
+}) {
   return (
     <div>
       <h3 className="text-sm font-medium text-foreground">{title}</h3>
       <ul className="mt-4 space-y-2.5">
-        {items.map((i) => (
-          <li key={i}>
-            <span className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
-              {i}
-            </span>
-          </li>
-        ))}
+        {items.map((item) => {
+          const isObj = typeof item === "object";
+          const label = isObj ? item.name : item;
+          const href = isObj ? item.href : undefined;
+
+          return (
+            <li key={label}>
+              {href ? (
+                <a
+                  href={href}
+                  className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {label}
+                </a>
+              ) : (
+                <span className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary">
+                  {label}
+                </span>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
