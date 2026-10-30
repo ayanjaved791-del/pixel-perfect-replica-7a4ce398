@@ -31,7 +31,13 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import { getInquiries, updateInquiryStatus, deleteInquiry, type ClientInquiry } from "@/lib/inbox";
+import {
+  getInquiries,
+  fetchServerInquiries,
+  updateInquiryStatus,
+  deleteInquiry,
+  type ClientInquiry,
+} from "@/lib/inbox";
 import { cn } from "@/lib/utils";
 
 const title = "Client Inquiries Admin Portal — six2eight";
@@ -68,20 +74,39 @@ function AdminPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "new" | "contacted" | "archived">("all");
   const [selectedInquiry, setSelectedInquiry] = useState<ClientInquiry | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  // Reload inquiries from local store
-  const refreshInquiries = useCallback(() => {
-    const data = getInquiries();
-    setInquiries(data);
+  // Reload inquiries from local store and server
+  const refreshInquiries = useCallback(async () => {
+    setIsSyncing(true);
+    // 1. Immediately read local clean cache
+    const localData = getInquiries();
+    setInquiries(localData);
     setSelectedInquiry((prev) => {
       if (!prev) return null;
-      return data.find((item) => item.id === prev.id) || null;
+      return localData.find((item) => item.id === prev.id) || null;
     });
+
+    // 2. Fetch fresh live records from server in background
+    try {
+      const serverData = await fetchServerInquiries();
+      setInquiries(serverData);
+      setSelectedInquiry((prev) => {
+        if (!prev) return null;
+        return serverData.find((item) => item.id === prev.id) || null;
+      });
+    } catch {
+      // Continue with localData
+    } finally {
+      setIsSyncing(false);
+    }
   }, []);
 
+  // Set up real-time live polling and cross-tab BroadcastChannel
   useEffect(() => {
     refreshInquiries();
 
+    // 1. Storage & Custom Event Listeners
     const handleStorageUpdate = () => {
       refreshInquiries();
     };
@@ -90,10 +115,33 @@ function AdminPage() {
     window.addEventListener("six2eight_inquiry_added", handleStorageUpdate);
     window.addEventListener("six2eight_inquiry_updated", handleStorageUpdate);
 
+    // 2. Cross-tab BroadcastChannel listener
+    let channel: BroadcastChannel | null = null;
+    if ("BroadcastChannel" in window) {
+      try {
+        channel = new BroadcastChannel("six2eight_inbox_channel");
+        channel.onmessage = (event) => {
+          if (event.data?.type === "INQUIRY_ADDED") {
+            toast.info(`New client submission from ${event.data.payload.fullName}!`);
+          }
+          refreshInquiries();
+        };
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+
+    // 3. Real-time background polling every 3 seconds
+    const interval = setInterval(() => {
+      refreshInquiries();
+    }, 3000);
+
     return () => {
       window.removeEventListener("storage", handleStorageUpdate);
       window.removeEventListener("six2eight_inquiry_added", handleStorageUpdate);
       window.removeEventListener("six2eight_inquiry_updated", handleStorageUpdate);
+      if (channel) channel.close();
+      clearInterval(interval);
     };
   }, [refreshInquiries]);
 
@@ -385,10 +433,22 @@ function AdminPage() {
 
         {/* Right Action Tools & Logout */}
         <div className="flex items-center gap-2.5">
+          {/* Live Real-Time Sync Indicator */}
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold">
+            <span className="relative flex size-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full size-2 bg-emerald-400"></span>
+            </span>
+            <span>Real-Time Sync Active</span>
+          </div>
+
           <button
             type="button"
             onClick={refreshInquiries}
-            className="p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+            className={cn(
+              "p-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer",
+              isSyncing && "animate-spin text-[#9AFD0D]",
+            )}
             title="Refresh Inquiries"
           >
             <RefreshCw className="size-4" />
@@ -439,7 +499,7 @@ function AdminPage() {
           <div className="p-4 rounded-2xl bg-[#16161B] border border-white/10">
             <div className="text-xs text-neutral-400 font-medium flex items-center justify-between">
               <span>New / Unread</span>
-              <span className="size-2 rounded-full bg-[#9AFD0D] animate-ping" />
+              {newCount > 0 && <span className="size-2 rounded-full bg-[#9AFD0D] animate-ping" />}
             </div>
             <div className="text-2xl sm:text-3xl font-extrabold text-[#9AFD0D] mt-1">
               {newCount}
@@ -456,9 +516,15 @@ function AdminPage() {
           </div>
 
           <div className="p-4 rounded-2xl bg-[#16161B] border border-white/10">
-            <div className="text-xs text-neutral-400 font-medium">Response SLA</div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white mt-1">&lt; 12h</div>
-            <div className="text-[11px] text-[#9AFD0D] mt-0.5">100% on target</div>
+            <div className="text-xs text-neutral-400 font-medium flex items-center justify-between">
+              <span>Real-Time Status</span>
+              <span className="relative flex size-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#9AFD0D] opacity-75"></span>
+                <span className="relative inline-flex rounded-full size-2 bg-[#9AFD0D]"></span>
+              </span>
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-[#9AFD0D] mt-1">Live</div>
+            <div className="text-[11px] text-neutral-400 mt-0.5">Listening to all forms</div>
           </div>
         </div>
 
@@ -506,14 +572,31 @@ function AdminPage() {
           {/* Left Column: Inquiry list */}
           <div className="lg:col-span-6 xl:col-span-5 space-y-3">
             {filtered.length === 0 ? (
-              <div className="p-12 text-center rounded-3xl border border-white/10 bg-[#16161B]">
-                <Inbox className="size-10 text-neutral-600 mx-auto mb-3" />
-                <h3 className="text-base font-bold text-white">No inquiries found</h3>
-                <p className="text-xs text-neutral-400 mt-1 max-w-xs mx-auto">
+              <div className="p-8 sm:p-12 text-center rounded-3xl border border-white/10 bg-[#16161B]">
+                <div className="size-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400 mx-auto mb-3">
+                  <Inbox className="size-7" />
+                </div>
+                <h3 className="text-base font-bold text-white">
+                  {inquiries.length === 0 ? "No client messages yet" : "No matching inquiries"}
+                </h3>
+                <p className="text-xs text-neutral-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
                   {searchQuery || statusFilter !== "all"
                     ? "Try adjusting your search query or status filter."
-                    : "Client form submissions from /contact and homepage will appear here automatically."}
+                    : "All dummy data has been removed. Client submissions from /contact, homepage, or web development will arrive here automatically in real-time."}
                 </p>
+                {inquiries.length === 0 && (
+                  <div className="mt-5">
+                    <a
+                      href="/contact"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#9AFD0D]/10 hover:bg-[#9AFD0D]/20 text-[#9AFD0D] border border-[#9AFD0D]/30 text-xs font-semibold transition-colors"
+                    >
+                      <span>Open /contact in New Tab to Test</span>
+                      <ExternalLink className="size-3" />
+                    </a>
+                  </div>
+                )}
               </div>
             ) : (
               filtered.map((inq) => {

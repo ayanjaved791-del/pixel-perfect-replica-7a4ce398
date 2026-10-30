@@ -15,123 +15,229 @@ export type ClientInquiry = {
   notes?: string;
 };
 
-const STORAGE_KEY = "six2eight_client_inquiries_v1";
+const STORAGE_KEY = "six2eight_realtime_client_inquiries_v2";
+const BROADCAST_CHANNEL_NAME = "six2eight_inbox_channel";
 
-const SEED_INQUIRIES: ClientInquiry[] = [
-  {
-    id: "INQ-2026-003",
-    fullName: "Marcus Vance",
-    email: "m.vance@apexfintech.io",
-    company: "Apex Fintech Capital",
-    website: "https://apexfintech.io",
-    services: ["Web Development", "UI/UX Product Design", "Web Applications & SaaS"],
-    budget: "$50,000 – $100,000",
-    timeline: "Immediate (Next 1-2 weeks)",
-    message:
-      "We are looking to rebuild our institutional investment platform portal. Need real-time transaction dashboards and modern typography.",
-    hearAbout: "Client Referral",
-    source: "/contact",
-    createdAt: new Date(Date.now() - 1000 * 60 * 42).toISOString(), // 42 mins ago
-    status: "new",
-  },
-  {
-    id: "INQ-2026-002",
-    fullName: "Elena Rostova",
-    email: "elena@solarpulse.co",
-    company: "SolarPulse Energy",
-    website: "https://solarpulse.co",
-    services: ["Shopify & E-commerce", "Branding & Positioning", "SEO & Organic Growth"],
-    budget: "$25,000 – $50,000",
-    timeline: "1 – 2 Months",
-    message:
-      "Launching next-gen portable renewable generators. We need high-converting landing pages, interactive product 3D showcases, and Shopify custom theme.",
-    hearAbout: "Google Search",
-    source: "/#contact",
-    createdAt: new Date(Date.now() - 1000 * 60 * 195).toISOString(), // ~3 hours ago
-    status: "contacted",
-  },
-  {
-    id: "INQ-2026-001",
-    fullName: "Julian Thorne",
-    email: "julian@luminahealth.com",
-    company: "Lumina Health AI",
-    website: "https://luminahealth.com",
-    services: ["Webflow / Custom CMS", "AI Automation & CRM"],
-    budget: "$10,000 – $25,000",
-    timeline: "Flexible / Exploring",
-    message:
-      "Looking for creative direction and Webflow CMS build for our series-A healthtech venture. Need integrations with HubSpot and Calendly.",
-    hearAbout: "LinkedIn",
-    source: "/services/web-development",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(), // 22 hours ago
-    status: "new",
-  },
-];
+// Dummy names to remove if found in any old caches
+const DUMMY_EMAILS = ["m.vance@apexfintech.io", "elena@solarpulse.co", "julian@luminahealth.com"];
 
-export function getInquiries(): ClientInquiry[] {
-  if (typeof window === "undefined") return SEED_INQUIRIES;
+// Clean memory cache
+let memoryInquiries: ClientInquiry[] = [];
+
+// Broadcast channel for multi-tab instant real-time sync
+let broadcastChannel: BroadcastChannel | null = null;
+if (typeof window !== "undefined" && "BroadcastChannel" in window) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_INQUIRIES));
-      return SEED_INQUIRIES;
-    }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : SEED_INQUIRIES;
-  } catch (err) {
-    console.error("Failed to read inquiries from storage", err);
-    return SEED_INQUIRIES;
+    broadcastChannel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
+  } catch (e) {
+    console.warn("BroadcastChannel not supported", e);
   }
 }
 
-export function saveInquiry(
+/**
+ * Filter out any legacy dummy / fake data from older builds
+ */
+function sanitize(items: unknown[]): ClientInquiry[] {
+  if (!Array.isArray(items)) return [];
+  return (items as ClientInquiry[]).filter((item) => {
+    if (!item || typeof item !== "object") return false;
+    if (typeof item.fullName !== "string" || !item.fullName.trim()) return false;
+    if (typeof item.email !== "string" || !item.email.trim()) return false;
+    if (DUMMY_EMAILS.includes(item.email.toLowerCase())) return false;
+    if (item.fullName.toLowerCase().includes("marcus vance")) return false;
+    if (item.fullName.toLowerCase().includes("elena rostova")) return false;
+    if (item.fullName.toLowerCase().includes("julian thorne")) return false;
+    return true;
+  });
+}
+
+/**
+ * Get all client inquiries from local cache / storage (100% clean of dummy data)
+ */
+export function getInquiries(): ClientInquiry[] {
+  if (typeof window === "undefined") {
+    return memoryInquiries;
+  }
+
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return memoryInquiries;
+    }
+    const parsed = JSON.parse(raw);
+    const cleaned = sanitize(parsed);
+    // If dummy data was pruned, save back clean state
+    if (cleaned.length !== (Array.isArray(parsed) ? parsed.length : 0)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+    }
+    memoryInquiries = cleaned;
+    return cleaned;
+  } catch (err) {
+    console.error("Failed to read inquiries from storage", err);
+    return memoryInquiries;
+  }
+}
+
+/**
+ * Fetch real-time inquiries from the server API and merge with local storage
+ */
+export async function fetchServerInquiries(): Promise<ClientInquiry[]> {
+  try {
+    const res = await fetch("/api/inquiries", {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const serverData = await res.json();
+      if (Array.isArray(serverData)) {
+        const cleanedServer = sanitize(serverData);
+        const local = getInquiries();
+        // Merge by unique id
+        const map = new Map<string, ClientInquiry>();
+        for (const item of local) map.set(item.id, item);
+        for (const item of cleanedServer) {
+          const existing = map.get(item.id);
+          // Preserve local status updates if already modified locally
+          if (existing && existing.status !== item.status) {
+            map.set(item.id, { ...item, status: existing.status });
+          } else {
+            map.set(item.id, item);
+          }
+        }
+        const merged = Array.from(map.values()).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
+
+        memoryInquiries = merged;
+        if (typeof window !== "undefined") {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        }
+        return merged;
+      }
+    }
+  } catch (e) {
+    // Network or server offline; graceful fallback to local storage
+  }
+  return getInquiries();
+}
+
+/**
+ * Save new inquiry from any contact form on the website
+ */
+export async function saveInquiry(
   input: Omit<ClientInquiry, "id" | "createdAt" | "status">,
-): ClientInquiry {
-  const current = getInquiries();
+): Promise<ClientInquiry> {
   const newRecord: ClientInquiry = {
     ...input,
-    id: `INQ-${new Date().getFullYear()}-${String(current.length + 1).padStart(3, "0")}`,
+    id: `INQ-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
     createdAt: new Date().toISOString(),
     status: "new",
   };
 
+  const current = getInquiries();
   const updated = [newRecord, ...current];
+  memoryInquiries = updated;
+
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+      // Broadcast real-time event to all open tabs / admin view
       window.dispatchEvent(new CustomEvent("six2eight_inquiry_added", { detail: newRecord }));
+      if (broadcastChannel) {
+        broadcastChannel.postMessage({ type: "INQUIRY_ADDED", payload: newRecord });
+      }
     } catch (err) {
       console.error("Failed to save inquiry to storage", err);
     }
   }
 
+  // Attempt to sync to server API asynchronously
+  try {
+    fetch("/api/inquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newRecord),
+    }).catch(() => {});
+  } catch {
+    // Silently continue with local storage
+  }
+
   return newRecord;
 }
 
-export function updateInquiryStatus(id: string, status: ClientInquiry["status"]): ClientInquiry[] {
+/**
+ * Update an inquiry status (new, contacted, archived)
+ */
+export async function updateInquiryStatus(
+  id: string,
+  status: ClientInquiry["status"],
+): Promise<ClientInquiry[]> {
   const current = getInquiries();
   const updated = current.map((item) => (item.id === id ? { ...item, status } : item));
+  memoryInquiries = updated;
+
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent("six2eight_inquiry_updated"));
+    if (broadcastChannel) {
+      broadcastChannel.postMessage({ type: "INQUIRY_STATUS_UPDATED", payload: { id, status } });
+    }
   }
+
+  try {
+    fetch("/api/inquiries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    }).catch(() => {});
+  } catch {
+    // Silently continue
+  }
+
   return updated;
 }
 
-export function deleteInquiry(id: string): ClientInquiry[] {
+/**
+ * Delete an inquiry
+ */
+export async function deleteInquiry(id: string): Promise<ClientInquiry[]> {
   const current = getInquiries();
   const updated = current.filter((item) => item.id !== id);
+  memoryInquiries = updated;
+
   if (typeof window !== "undefined") {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent("six2eight_inquiry_updated"));
+    if (broadcastChannel) {
+      broadcastChannel.postMessage({ type: "INQUIRY_DELETED", payload: { id } });
+    }
   }
+
+  try {
+    fetch("/api/inquiries", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    }).catch(() => {});
+  } catch {
+    // Silently continue
+  }
+
   return updated;
 }
 
+/**
+ * Wipe all data
+ */
 export function clearAllInquiries(): ClientInquiry[] {
+  memoryInquiries = [];
   if (typeof window !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+    localStorage.removeItem(STORAGE_KEY);
     window.dispatchEvent(new CustomEvent("six2eight_inquiry_updated"));
+    if (broadcastChannel) {
+      broadcastChannel.postMessage({ type: "INQUIRIES_CLEARED" });
+    }
   }
   return [];
 }

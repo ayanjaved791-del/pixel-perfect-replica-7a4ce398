@@ -44,8 +44,100 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+type LiveInquiryRecord = {
+  id: string;
+  fullName: string;
+  email: string;
+  company?: string;
+  website?: string;
+  services?: string[];
+  budget?: string;
+  timeline?: string;
+  message?: string;
+  hearAbout?: string;
+  source: string;
+  createdAt: string;
+  status: string;
+  [key: string]: unknown;
+};
+
+// In-memory server-side storage for real client inquiries (Zero dummy data)
+const liveServerInquiries: LiveInquiryRecord[] = [];
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+
+    // Dedicated Real-Time Client Inquiries API
+    if (url.pathname === "/api/inquiries") {
+      const headers = {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*",
+        "access-control-allow-methods": "GET, POST, PATCH, DELETE, OPTIONS",
+        "access-control-allow-headers": "Content-Type",
+      };
+
+      if (request.method === "OPTIONS") {
+        return new Response(null, { headers });
+      }
+
+      if (request.method === "GET") {
+        return new Response(JSON.stringify(liveServerInquiries), { headers });
+      }
+
+      if (request.method === "POST") {
+        try {
+          const body = (await request.json()) as LiveInquiryRecord;
+          const record: LiveInquiryRecord = {
+            ...body,
+            id: body.id || `INQ-${new Date().getFullYear()}-${Date.now().toString().slice(-4)}`,
+            createdAt: body.createdAt || new Date().toISOString(),
+            status: body.status || "new",
+          };
+          // Insert at start
+          liveServerInquiries.unshift(record);
+          return new Response(JSON.stringify(record), { status: 201, headers });
+        } catch {
+          return new Response(JSON.stringify({ error: "Invalid payload" }), {
+            status: 400,
+            headers,
+          });
+        }
+      }
+
+      if (request.method === "PATCH") {
+        try {
+          const body = await request.json();
+          const index = liveServerInquiries.findIndex((i) => i.id === body.id);
+          if (index !== -1) {
+            liveServerInquiries[index] = { ...liveServerInquiries[index], ...body };
+          }
+          return new Response(JSON.stringify(liveServerInquiries), { headers });
+        } catch (e) {
+          return new Response(JSON.stringify({ error: "Invalid payload" }), {
+            status: 400,
+            headers,
+          });
+        }
+      }
+
+      if (request.method === "DELETE") {
+        try {
+          const body = await request.json();
+          const index = liveServerInquiries.findIndex((i) => i.id === body.id);
+          if (index !== -1) {
+            liveServerInquiries.splice(index, 1);
+          }
+          return new Response(JSON.stringify(liveServerInquiries), { headers });
+        } catch (e) {
+          return new Response(JSON.stringify({ error: "Invalid payload" }), {
+            status: 400,
+            headers,
+          });
+        }
+      }
+    }
+
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
